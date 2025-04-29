@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Scanner</title>
+    <style>
+body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f3ff;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            color: black; 
+        }
+
+.title {
+    font-size: 24px;
+    margin: 20px 0;
+}
+
+.gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+.gallery img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.gallery img:hover {
+    transform: scale(1.1);
+}
+
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+}
+
+.overlay img {
+    max-width: 80%;
+    max-height: 80%;
+    border-radius: 10px;
+}
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #6a5acd;
+            padding: 15px 30px;
+            color: white;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+        }
+        .profile {
+            background: white;
+            color: #6a5acd;
+            padding: 10px;
+            border-radius: 50%;
+            font-weight: bold;
+            text-align: center;
+        }
+        main {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+        .card h5 {
+            color: #6a5acd;
+            text-align: center;
+        }
+
+        button {
+            background: #6a5acd;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            left: 50%;
+        }
+        .disabled {
+            background: #d3c4ff;
+            cursor: not-allowed;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">MediCheck</div>
+        <nav>
+            <a href="home.html">Dashboard</a>
+            <a href="mediiStocks.html">MediStock</a>
+            <a href="guardiancontact.html">Guardian Profile</a>
+            <a href="MedicalRecords.html">Medical Records</a>
+            <a href="scan.html">MedicineScanner</a>
+
+        </nav>
+        <div class="profile"><a href="profilemedi.html">GB</a></div>
+    </header>
+    <h2 class="title">Medicines Scanner</h2>
+    <button class="disabled">Scan New</button>
+    
+    <div class="dashboard">
+        <div class="card">
+            <h5>Sartel</h5>
+            <div class="gallery">
+                <img src="sartel.jpg" alt="sartel" onclick="openImage(this)">
+            </div>
+        </div>
+        <div class="card">
+            <h5>Rivaflo</h5>
+            <div class="gallery">
+                <img src="rivaflo.jpg" alt="rivaflo" onclick="openImage(this)">
+            </div>
+        </div>
+        <div class="card">
+            <h5>Remetor</h5>
+            <div class="gallery">
+                <img src="remetor.jpg" alt="remetor" onclick="openImage(this)">
+            </div>
+        </div>
+        <div class="card">
+            <h5>Prolomet</h5>
+            <div class="gallery">
+                <img src="prolomet.jpg" alt="prolomet" onclick="openImage(this)">
+            </div>
+        </div>
+        <div class="card">
+            <h5>Pantop</h5>
+            <div class="gallery">
+                <img src="pantop.jpg" alt="pantop" onclick="openImage(this)">
+            </div>
+        </div>
+    
+        <!-- Image Overlay -->
+        <div id="overlay" class="overlay" onclick="closeImage()">
+            <img id="overlayImg">
+        </div>
+    </div>
+    <script>
+        function openImage(img) {
+    let overlay = document.getElementById("overlay");
+    let overlayImg = document.getElementById("overlayImg");
+    
+    overlayImg.src = img.src;
+    overlay.style.display = "flex";
+}
+
+function closeImage() {
+    document.getElementById("overlay").style.display = "none";
+}
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MediCheck - Alarm & Stock</title>
+  <style>
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f3ff;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #6a5acd;
+  padding: 15px 30px;
+  color: white;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+nav a {
+  margin: 0 15px;
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+}
+
+.profile {
+  background: white;
+  color: #6a5acd;
+  padding: 10px;
+  border-radius: 50%;
+  font-weight: bold;
+}
+
+main {
+  padding: 20px;
+  text-align: center;
+}
+
+table, th, td {
+  border: 1px solid #6a5acd;
+  border-collapse: collapse;
+  font-size: 18px;
+  margin: 20px auto;
+  height: 40px;
+  padding: 5px;
+}
+
+input[type="time"], input[type="number"], input[type="text"] {
+  width: 90%;
+  padding: 4px;
+}
+
+button {
+  padding: 5px 10px;
+  margin: 5px;
+  background-color: #6a5acd;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #5941a9;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 25%;
+  left: 30%;
+  width: 40%;
+  background: white;
+  border: 2px solid #6a5acd;
+  padding: 20px;
+  text-align: center;
+  z-index: 999;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.modal img {
+  width: 200px;
+  height: 200px;
+}
+</style>
+</head>
+<body onload="loadData()">
+  <header>
+    <div class="logo">MediCheck</div>
+    <nav>
+      <a href="home.html">Dashboard</a>
+      <a href="mediiStocks.html">MediStock</a>
+      <a href="guardiancontact.html">Guardian Profile</a>
+      <a href="MedicalRecords.html">Medical Records</a>
+      <a href="scan.html">Medicine Scanner</a>
+    </nav>
+    <div class="profile"><a href="profilemedi.html">GB</a></div>
+  </header>
+
+  <main>
+    <h1>Medicines</h1>
+    <table id="medicineTable">
+      <thead>
+        <tr>
+          <th>Medicine Name</th>
+          <th>Dosage</th>
+          <th>Morning</th>
+          <th>Afternoon</th>
+          <th>Evening</th>
+          <th>Night</th>
+          <th>Count</th>
+          <th>Stock</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="medicineBody"></tbody>
+    </table>
+    <button onclick="addMedicine()">Add Medicine</button>
+  </main>
+
+  <div id="alarmModal" class="modal">
+    <h2>Alarm Ringing!</h2>
+    <img src="sartel.jpg" alt="Alarm Image" />
+    <p id="medicineReminderText"></p>
+    <button id="stopAlarmBtn">Stop Alarm</button>
+  </div>
+
+  <audio id="alarmSound">
+    <source src="alarm.wav" type="audio/wav"/>
+  </audio>
+
+  <script>
+let alarmTimers = {};
+let alarmState = {};
+const periods = ["morning", "afternoon", "evening", "night"];
+
+function saveData() {
+  const data = [];
+  document.querySelectorAll("#medicineTable tbody tr").forEach((row) => {
+    const medicine = row.querySelector(".med-name").value;
+    const dosage = parseInt(row.querySelector(".dosage").value);
+    const count = parseInt(row.querySelector(".count").textContent);
+    const times = {};
+    periods.forEach((p) => times[p] = row.querySelector(`.${p}-time`).value);
+    data.push({ medicine, dosage, count, times });
+  });
+  localStorage.setItem("medicines", JSON.stringify(data));
+  localStorage.setItem("alarmState", JSON.stringify(alarmState));
+}
+
+function loadData() {
+  const stored = JSON.parse(localStorage.getItem("medicines")) || [];
+  alarmState = JSON.parse(localStorage.getItem("alarmState")) || {};
+  stored.forEach(createRow);
+}
+
+function createRow(data = {}) {
+  const tbody = document.getElementById("medicineBody");
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td><input type="text" class="med-name" value="${data.medicine || ""}"></td>
+    <td><input type="number" class="dosage" value="${data.dosage || 1}"></td>
+    ${periods.map(p => `
+      <td>
+        <input type="time" class="${p}-time" value="${data.times?.[p] || ""}" />
+        <button onclick="setAlarm(this, '${p}')">Set</button>
+      </td>
+    `).join("")}
+    <td class="count">${data.count || 0}</td>
+    <td><input type="number" onblur="updateStock(this)" placeholder="+" /></td>
+    <td><button onclick="deleteRow(this)">Delete</button></td>
+  `;
+  tbody.appendChild(row);
+  saveData();
+}
+
+function addMedicine() {
+  createRow();
+}
+
+function deleteRow(btn) {
+  const row = btn.closest("tr");
+  row.remove();
+  saveData();
+}
+
+function updateStock(input) {
+  const row = input.closest("tr");
+  const count = row.querySelector(".count");
+  const val = parseInt(input.value || "0");
+  count.textContent = parseInt(count.textContent) + val;
+  input.value = "";
+  saveData();
+}
+function getMedicineImage(medicineName) {
+  const imageMap = {
+    "sartel": "sartel.jpg",
+    "rivaflo": "rivaflo.jpg",
+    "remetor": "remetor.jpg",
+    "prolomet": "Prolomet.jpg"
+    // Add more mappings as needed
+  };
+
+  const defaultImage = "default.jpg"; // A generic image if medicine name isn't matched
+  const key = medicineName.toLowerCase().trim();
+
+  return imageMap[key] || defaultImage;
+}
+
+
+function setAlarm(btn, period) {
+  const row = btn.closest("tr");
+  const rowIndex = [...document.querySelectorAll("tbody tr")].indexOf(row);
+  const time = row.querySelector(`.${period}-time`).value;
+  const key = `${rowIndex}_${period}`;
+  if (time) {
+    alarmState[key] = { count: 0, stopped: false };
+    saveData();
+    alert("Alarm is set successfully!");
+  }
+}
+
+function checkAlarms() {
+  const now = new Date();
+  const current = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+  document.querySelectorAll("tbody tr").forEach((row, i) => {
+    periods.forEach(period => {
+      const key = `${i}_${period}`;
+      const time = row.querySelector(`.${period}-time`)?.value;
+      const alarm = alarmState[key];
+
+      if (time === current && alarm && !alarm.stopped && alarm.count < 3 && !alarmTimers[key]) {
+        triggerAlarm(row, i, period, key);
+      }
+    });
+  });
+}
+
+function triggerAlarm(row, i, period, key) {
+  const sound = document.getElementById("alarmSound");
+  const modal = document.getElementById("alarmModal");
+  const stopBtn = document.getElementById("stopAlarmBtn");
+  const medName = row.querySelector(".med-name").value;
+  const reminderText = document.getElementById("medicineReminderText");
+const alarmImage = document.querySelector("#alarmModal img");
+alarmImage.src = getMedicineImage(medName);
+
+
+  reminderText.textContent = `It’s time to take: ${medName}`;
+  sound.currentTime = 0;
+  sound.loop = true;
+  sound.play().catch(() => console.warn("User interaction needed for sound."));
+  modal.style.display = "block";
+
+  let dismissed = false;
+
+  stopBtn.onclick = () => {
+    modal.style.display = "none";
+    sound.pause();
+    sound.currentTime = 0;
+    alarmState[key].stopped = true;
+    decrementCount(row);
+    dismissed = true;
+    clearTimeout(alarmTimers[key]);
+    delete alarmTimers[key];
+    saveData();
+  };
+
+  alarmState[key].count++;
+  saveData();
+
+  // Stop alarm after 30 seconds
+  alarmTimers[key] = setTimeout(() => {
+    modal.style.display = "none";
+    sound.pause();
+    sound.currentTime = 0;
+    delete alarmTimers[key];
+
+    // Repeat logic: if not stopped manually, repeat after 2 mins
+    if (!alarmState[key].stopped && alarmState[key].count < 3) {
+      setTimeout(() => {
+        triggerAlarm(row, i, period, key);
+      }, 90000); // 2 minutes
+    }
+
+  }, 30000); // 30 seconds
+}
+
+function decrementCount(row) {
+  const count = row.querySelector(".count");
+  const val = parseInt(count.textContent);
+  if (val > 0) {
+    count.textContent = val - 1;
+  }
+if(val<6)
+{
+alert("Stock is low. Restock immediately!!");
+}
+}
+
+setInterval(checkAlarms, 30000); // Check every minute
+
+</script>
+</body>
+</html>
